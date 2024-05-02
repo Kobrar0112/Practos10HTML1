@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Управление автомобилями</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      background-image: url('3.jpg'); 
+      background-position: center; 
+    }
+    .container {
+      backdrop-filter: blur(10px);
+    }
+    .form-group, h1, .car-item {
+      color: white;
+    }
+    .btn-primary {
+      background: rgb(0, 21, 75);
+      color: white;
+    }
+    .btn-primary:hover {
+      color: rgb(200, 255, 0);
+    }
+    .card {
+      width: 18rem;
+      height: 25rem;
+    } 
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Управление автомобилями</h1>
+    <form id="carForm">
+      <div class="form-group">
+        <label for="carMake">Марка:</label>
+        <input type="text" class="form-control" id="carMake" required>
+      </div>
+      <div class="form-group">
+        <label for="carModel">Модель:</label>
+        <input type="text" class="form-control" id="carModel" required>
+      </div>
+      <div class="form-group">
+        <label for="carYear">Год выпуска:</label>
+        <input type="number" class="form-control" id="carYear" required>
+      </div>
+      <div class="form-group">
+        <label for="carImage">Изображение:</label>
+        <input type="file" class="form-control-file" id="carImage" accept="image/*">
+      </div>
+      
+      <button type="submit" class="btn btn-primary">Добавить автомобиль</button>
+    </form>
+    <hr>
+    <div class="row" id="carList"></div>
+  </div>
+
+  
+
+  <div class="btn btn-primary" id="editModal" style="display: none; position: fixed; top: 20%; left: 50%; transform: translateX(-50%); background: white; padding: 20px; border-radius: 5px; box-shadow: 0px 0px 10px rgba(0,0,0,0.5);">
+    <div class="form-group">
+      <label for="editMake">Марка:</label>
+      <input type="text" class="form-control" id="editMake">
+    </div>
+    <div class="form-group">
+      <label for="editModel">Модель:</label>
+      <input type="text" class="form-control" id="editModel">
+    </div>
+    <div class="form-group">
+      <label for="editYear">Год выпуска:</label>
+      <input type="number" class="form-control" id="editYear">
+    </div>
+    <div class="form-group">
+      <label for="editImage">Изображение:</label>
+      <input type="file" class="form-control-file" id="editImage" accept="image/*">
+    </div>
+    <button id="saveChanges" class="btn btn-success">Сохранить изменения</button>
+    <button onclick="document.getElementById('editModal').style.display='none'" class="btn btn-secondary">Закрыть</button>
+  </div>
+
+  <script>
+    class Car {
+      constructor(make, model, year, image, element) {
+        this.make = make;
+        this.model = model;
+        this.year = year;
+        this.image = image;
+        this.element = element;
+      }
+
+      getInfo() {
+        return `
+          <div class="card">
+            <img src="${this.image}" class="card-img-top" alt="...">
+            <div class="card-body">
+              <h5 class="card-title">${this.make}</h5>
+              <p class="card-text">Модель: ${this.model}</p>
+              <p class="card-text">Год выпуска: ${this.year}</p>
+            </div>
+          </div>
+        `;
+      }
+
+      updateInfo() {
+        this.element.innerHTML = this.getInfo();
+      }
+    }
+
+    function addCarToList(car) {
+      var carItem = document.createElement("div");
+      carItem.classList.add("col-lg-4", "col-md-6", "mb-4");
+      carItem.innerHTML = car.getInfo();
+
+      var deleteButton = document.createElement("button");
+      deleteButton.textContent = "Удалить";
+      deleteButton.classList.add("btn", "btn-danger", "mt-2");
+      deleteButton.onclick = function() {
+        carItem.remove();
+      };
+
+      var editButton = document.createElement("button");
+      editButton.textContent = "Изменить";
+      editButton.classList.add("btn", "btn-secondary", "mt-2");
+      editButton.onclick = function() {
+        openEditModal(car);
+      };
+
+      carItem.appendChild(deleteButton);
+      carItem.appendChild(editButton);
+      document.getElementById("carList").appendChild(carItem);
+
+      car.element = carItem;
+    }
+
+    document.getElementById("carForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+      var make = document.getElementById("carMake").value;
+      var model = document.getElementById("carModel").value;
+      var year = document.getElementById("carYear").value;
+      var imageInput = document.getElementById("carImage");
+      var image = URL.createObjectURL(imageInput.files[0]);
+      var car = new Car(make, model, year, image);
+      addCarToList(car);
+      document.getElementById("carMake").value = "";
+      document.getElementById("carModel").value = "";
+      document.getElementById("carYear").value = "";
+      imageInput.value = ""; // Reset the input field
+    });
+
+    function openEditModal(car) {
+      document.getElementById('editMake').value = car.make;
+      document.getElementById('editModel').value = car.model;
+      document.getElementById('editYear').value = car.year;
+      document.getElementById('editImage').value = car.image;
+      document.getElementById('editModal').style.display = 'block';
+
+      document.getElementById('saveChanges').onclick = function() {
+        car.make = document.getElementById('editMake').value;
+        car.model = document.getElementById('editModel').value;
+        car.year = document.getElementById('editYear').value;
+        car.image = document.getElementById('editImage').value;
+        car.updateInfo();
+        document.getElementById('editModal').style.display = 'none';
+      };
+    }
+  </script>
+</body>
+</html>
